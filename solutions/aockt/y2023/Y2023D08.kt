@@ -1,14 +1,26 @@
 package aockt.y2023
 
+import aockt.util.lcm
+import aockt.util.splitByEmptyLines
+import aockt.y2023.Network.*
 import io.github.jadarma.aockt.core.Solution
 import java.lang.IllegalArgumentException
 
 object Y2023D08 : Solution {
     override fun partOne(input: String): Any {
-        val (movesStr, networkStr) = input.split("\n\n", "\r\n\r\n")
+        val (movesStr, networkStr) = input.splitByEmptyLines()
         val moves = movesStr.asMoves()
         val network = networkStr.asNetwork()
-        return network.stepCountForEndNode(moves)
+        val start = Node("AAA")
+        val end = Node("ZZZ")
+        return network.stepCount(moves, from = start, to = end)
+    }
+
+    override fun partTwo(input: String): Any {
+        val (movesStr, networkStr) = input.splitByEmptyLines()
+        val moves = movesStr.asMoves()
+        val network = networkStr.asNetwork()
+        return network.stepCountForSimultaneousTravel(moves)
     }
 
     private fun String.asMoves(): Moves = Moves.fromString(this)
@@ -34,6 +46,10 @@ private class Moves(private val moves: List<Move>) {
 
     enum class Move {
         LEFT, RIGHT
+    }
+
+    fun reset() {
+        nextMoveIndex = 0
     }
 
     fun nextMove(): Move {
@@ -65,10 +81,25 @@ private class Network(private val nodes: Map<Node, Map<Moves.Move, Node>>) {
         }
     }
 
-    fun stepCountForEndNode(moves: Moves): Int {
+    fun stepCount(moves: Moves, from: Node, to: Node): Int {
+        return stepCount(moves, from) { it == to }
+    }
+
+    fun stepCountForSimultaneousTravel(moves: Moves): Long {
+        val startNodes = nodes.keys.filter(Node::isStartNode)
+        val stepCounts = startNodes.map { start -> stepCountForFirstExitNode(moves, start).toLong() }
+        return lcm(*stepCounts.toLongArray())
+    }
+
+    fun stepCountForFirstExitNode(moves: Moves, from: Node): Int  {
+        return stepCount(moves, from) { it.isEndNode }
+    }
+
+    fun stepCount(moves: Moves, from: Node, reached: (Node) -> Boolean): Int {
         var count = 0
-        var currentNode = Node("AAA")
-        while (currentNode != Node("ZZZ")) {
+        var currentNode = from
+        moves.reset()
+        while (!reached(currentNode)) {
             currentNode = node(from = currentNode, move = moves.nextMove())
             count++
         }
@@ -78,5 +109,11 @@ private class Network(private val nodes: Map<Node, Map<Moves.Move, Node>>) {
     private fun node(from: Node, move: Moves.Move): Node = nodes[from]!![move]!!
 
     @JvmInline
-    value class Node(val value: String)
+    value class Node(val value: String) {
+        val isStartNode: Boolean
+            get() = value.endsWith('A')
+
+        val isEndNode: Boolean
+            get() = value.endsWith('Z')
+    }
 }

@@ -2,6 +2,8 @@
 
 package aockt.util
 
+fun String.splitByEmptyLines() = this.split("\n\n", "\r\n\r\n")
+
 fun String.asIntList(vararg delimiters: String, limit: Int = 0): List<Int> =
     this.split(*delimiters, limit = limit).map(String::toInt)
 
