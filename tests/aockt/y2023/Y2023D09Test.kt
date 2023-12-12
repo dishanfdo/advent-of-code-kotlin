@@ -13,4 +13,12 @@ class Y2023D09Test : AdventSpec<Y2023D09>({
         """.trimIndent() shouldOutput 114
     }
 
+    partTwo {
+        """
+            0 3 6 9 12 15
+            1 3 6 10 15 21
+            10 13 16 21 30 45
+        """.trimIndent() shouldOutput 2
+    }
+
 })
