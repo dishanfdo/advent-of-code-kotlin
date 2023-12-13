@@ -2,7 +2,9 @@ package aockt.util
 
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-data class Grid<T>(val data: List<List<T>>) {
+class Grid<T>(data: List<List<T>>) {
+    private val data: MutableList<MutableList<T>> = data.map { it.toMutableList() }.toMutableList()
+
     companion object {
         fun fromString(string: String): Grid<Char> {
             return Grid(data = string.lines().map { it.toCharArray().toList() })
@@ -17,8 +19,11 @@ data class Grid<T>(val data: List<List<T>>) {
     operator fun get(cell: Cell): T = data[cell.y][cell.x]
     fun entry(cell: Cell): Entry<T> = Entry(cell = cell, value = this[cell])
 
-    val width = data.firstOrNull()?.size ?: 0
-    val height = data.size
+    val width: Int
+        get() = data.firstOrNull()?.size ?: 0
+
+    val height: Int
+        get() = data.size
 
     fun adjacentCellsOf(cell: Cell, avoidDiagonals: Boolean = false): List<Cell> {
         val diffs = if (avoidDiagonals) {
@@ -49,6 +54,19 @@ data class Grid<T>(val data: List<List<T>>) {
             return rows
         }
 
+    val cellsByColumns: List<List<Cell>>
+        get() {
+            val cols = mutableListOf<List<Cell>>()
+            for (x in 0..<width) {
+                val col = mutableListOf<Cell>()
+                for (y in 0..<height) {
+                    col.add(Cell(x, y))
+                }
+                cols.add(col)
+            }
+            return cols
+        }
+
     val cells: List<Cell>
         get() = cellsByRows.flatten()
 
@@ -64,5 +82,15 @@ data class Grid<T>(val data: List<List<T>>) {
 
     fun first(value: T): Cell {
         return cells.first { this[it] == value }
+    }
+
+    fun addRow(index: Int, init: (Int) -> T) {
+        data.add(index, MutableList(width, init))
+    }
+
+    fun addColumn(index: Int, init: (Int) -> T) {
+        for ((row, rowData) in data.withIndex()) {
+            rowData.add(index, init(row))
+        }
     }
 }
