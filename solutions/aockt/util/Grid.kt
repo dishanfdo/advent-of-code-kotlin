@@ -20,14 +20,17 @@ data class Grid<T>(val data: List<List<T>>) {
     val width = data.firstOrNull()?.size ?: 0
     val height = data.size
 
-    fun adjacentCellsOf(cell: Cell): List<Cell> {
-        val xDiffs = listOf(-1, 0, 1)
-        val yDiffs = listOf(-1, 0, 1)
-        val cells = xDiffs.flatMap { dx ->
-            yDiffs.map { dy ->
-                Cell(x = cell.x + dx, y = cell.y + dy)
-            }
+    fun adjacentCellsOf(cell: Cell, avoidDiagonals: Boolean = false): List<Cell> {
+        val diffs = if (avoidDiagonals) {
+            listOf(-1 to 0, 1 to 0, 0 to 1, 0 to -1)
+        } else {
+            listOf(
+                -1 to 1, 0 to 1, 1 to 1,
+                -1 to 0, 1 to 0,
+                -1 to -1, 0 to -1, 1 to -1
+            )
         }
+        val cells = diffs.map { (dx, dy) -> Cell(x = cell.x + dx, y = cell.y + dy) }
         return cells.filter { it.isValid() }
     }
 
@@ -54,4 +57,12 @@ data class Grid<T>(val data: List<List<T>>) {
 
     val entriesByRows: List<List<Entry<T>>>
         get() = cellsByRows.map { row -> row.map(::entry) }
+
+    fun <R> map(transform: (T) -> R): Grid<R> {
+        return Grid(data.map { it.map(transform) })
+    }
+
+    fun first(value: T): Cell {
+        return cells.first { this[it] == value }
+    }
 }
