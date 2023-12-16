@@ -19,6 +19,10 @@ class Grid<T>(data: List<List<T>>) {
     operator fun get(cell: Cell): T = data[cell.y][cell.x]
     fun entry(cell: Cell): Entry<T> = Entry(cell = cell, value = this[cell])
 
+    operator fun set(x: Int, y: Int, value: T) {
+        data[y][x] = value
+    }
+
     val width: Int
         get() = data.firstOrNull()?.size ?: 0
 
@@ -91,6 +95,15 @@ class Grid<T>(data: List<List<T>>) {
     fun addColumn(index: Int, init: (Int) -> T) {
         for ((row, rowData) in data.withIndex()) {
             rowData.add(index, init(row))
+        }
+    }
+
+    fun print() {
+        for (x in 0..<width) {
+            for (y in 0..<height) {
+                print(this[y, x])
+            }
+            println()
         }
     }
 }
