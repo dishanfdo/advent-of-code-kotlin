@@ -45,6 +45,8 @@ class Grid<T>(data: List<List<T>>) {
 
     private fun Cell.isValid(): Boolean = this.x in 0..<width && this.y in 0..<height
 
+    fun isValidCell(cell: Cell): Boolean = cell.isValid()
+
     val cellsByRows: List<List<Cell>>
         get() {
             val rows = mutableListOf<List<Cell>>()
